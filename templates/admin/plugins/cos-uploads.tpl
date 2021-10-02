@@ -1,46 +1,6 @@
 <h1><i class="fa fa-picture-o"></i> COS配置</h1>
 <hr/>
 
-<p>You can configure this plugin via a combination of the below, for instance, you can use <em>instance meta-data</em>
-	and <em>environment variables</em> in combination. You can also specify values in the form below, and those will be
-	stored in the database.</p>
-
-<h3>Environment Variables</h3>
-<pre><code>export COS_ACCESS_KEY_ID="xxxxx"
-export COS_SECRET_ACCESS_KEY="yyyyy"
-export COS_UPLOADS_BUCKET="zzzz"
-export COS_UPLOADS_HOST="host"
-export COS_UPLOADS_PATH="path"
-</code></pre>
-
-<p>
-	Asset host and asset path are optional. You can leave these blank to default to the standard asset url -
-	http://mybucket.s3.amazonaws.com/uuid.jpg.<br/>
-	Asset host can be set to a custom asset host. For example, if set to cdn.mywebsite.com then the asset url is
-	http://cdn.mywebsite.com/uuid.jpg.<br/>
-	Asset path can be set to a custom asset path. For example, if set to /assets, then the asset url is
-	http://mybucket.s3.amazonaws.com/assets/uuid.jpg.<br/>
-	If both are asset host and path are set, then the url will be http://cdn.mywebsite.com/assets/uuid.jpg.
-</p>
-
-<h3>Instance meta-data</h3>
-<p>This plugin is compatible with the instance meta-data API, you'll need to setup role delegation for this to work. See
-	the following links:</p>
-<ul>
-	<li><a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AESDG-chapter-instancedata.html">EC2 Documentation:
-		Instance Metadata and User Data</a></li>
-	<li><a href="http://docs.aws.amazon.com/IAM/latest/UserGuide/roles-assume-role.html">IAM Documentation: Assuming a
-		Role</a></li>
-	<li><a href="http://docs.aws.amazon.com/IAM/latest/UserGuide/role-usecase-ec2app.html">IAM Documentation: EC2 Role
-		Example</a></li>
-	<li><a href="http://docs.aws.amazon.com/STS/latest/UsingSTS/sts_delegate.html">STS Documentation: Delegation</a>
-	</li>
-</ul>
-<div class="alert alert-warning">
-	<p>If you need help, create an <a href="https://github.com/LewisMcMahon/nodebb-plugin-s3-uploads/issues/">issue on
-		Github</a>.</p>
-</div>
-
 <h3>Database Stored configuration:</h3>
 <form id="s3-upload-bucket">
 	<label for="s3bucket">Bucket</label><br/>
@@ -107,7 +67,7 @@ export COS_UPLOADS_PATH="path"
 				data[values[i].name] = values[i].value;
 			}
 
-			$.post('{forumPath}api/admin/plugins/s3-uploads/' + type, data).done(function (response) {
+			$.post('{forumPath}api/admin/plugins/cos-uploads/' + type, data).done(function (response) {
 				if (response) {
 					ajaxify.refresh();
 					app.alertSuccess(response);
