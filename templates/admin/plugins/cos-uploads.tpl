@@ -16,7 +16,7 @@
 	       placeholder="/assets"><br/>
 
 	<label for="aws-region">Region</label><br/>
-	<input type="test" id="aws-region" name="region" title="AWS Region" class="form-control input-lg"
+	<input type="test" id="aws-region" name="region" value="{region}" title="AWS Region" class="form-control input-lg"
 	       placeholder="COS Region"><br/>
 
 	<button class="btn btn-primary" type="submit">Save</button>
