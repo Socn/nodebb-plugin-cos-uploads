@@ -30,9 +30,9 @@
 		security issue. We highly recommend that you investigate using either <strong>Environment Variables</strong> or
 		<strong>Instance Meta-data</strong>
 	</div>
-	<input type="text" name="accessKeyId" value="{accessKeyId}" maxlength="20" title="Access Key ID"
+	<input type="text" name="SecretId" value="{accessKeyId}" maxlength="20" title="Access Key ID"
 	       class="form-control input-lg" placeholder="Access Key ID"><br/>
-	<input type="text" name="secretAccessKey" value="{secretAccessKey}" title="Secret Access Key"
+	<input type="text" name="SecretKey" value="{secretAccessKey}" title="Secret Access Key"
 	       class="form-control input-lg" placeholder="Secret Access Key"><br/>
 	<button class="btn btn-primary" type="submit">Save</button>
 </form>
