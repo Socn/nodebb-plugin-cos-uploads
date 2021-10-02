@@ -200,7 +200,6 @@ function credentials(req, res, next) {
 function saveSettings(settings, res, next) {
 	db.setObject(Package.name, settings, function (err) {
 		if (err) {
-            console.log(err);
 			return next(makeError(err));
 		}
 
@@ -321,9 +320,6 @@ function uploadToCOS(filename, err, buffer, callback,filesize) {
 	// 	ContentType: mime.lookup(filename)
 	// };
 
-    console.log(cosKeyPath + uuid() + path.extname(filename));
-    console.log(settings.SecretId);
-    console.log(settings.SecretKey);
     connCos().putObject({
         Bucket: settings.bucket,
         Region: settings.region,
@@ -332,11 +328,8 @@ function uploadToCOS(filename, err, buffer, callback,filesize) {
         Body: buffer,
         ContentLength: filesize,
         onProgress: function(progressData) {
-            console.log(JSON.stringify(progressData));
         }
      }, function(err, data) {
-        console.log(err);
-        console.log(data);
         if(err == null){
             callback(null,{
                 name:filename,
