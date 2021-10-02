@@ -53,7 +53,7 @@ function fetchSettings(callback) {
 
 		if (newSettings.SecretKey) {
 			settings.SecretKey = newSettings.SecretKey;
-			SecretKeyFromDb = false;
+			SecretKeyFromDb = true;
 		} else {
 			settings.SecretKey = false;
 		}
