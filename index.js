@@ -1,7 +1,8 @@
 var Package = require("./package.json");
 
-var AWS = require("aws-sdk"),
-	mime = require("mime"),
+var COS = require('cos-nodejs-sdk-v5');
+
+var mime = require("mime"),
 	uuid = require("uuid").v4,
 	fs = require("fs"),
 	request = require("request"),
@@ -17,18 +18,18 @@ var plugin = {}
 
 "use strict";
 
-var S3Conn = null;
+var COSConn = null;
 var settings = {
-	"accessKeyId": false,
-	"secretAccessKey": false,
-	"region": process.env.AWS_DEFAULT_REGION || "us-east-1",
-	"bucket": process.env.S3_UPLOADS_BUCKET || undefined,
-	"host": process.env.S3_UPLOADS_HOST || "s3.amazonaws.com",
-	"path": process.env.S3_UPLOADS_PATH || undefined
+	"SecretId": false,
+	"SecretKey": false,
+	"region": process.env.COS_DEFAULT_REGION || undefined,
+	"bucket": process.env.COS_UPLOADS_BUCKET || undefined,
+	"host": process.env.COS_UPLOADS_HOST || "myqcloud.com",
+	"path": process.env.COS_UPLOADS_PATH || undefined
 };
 
-var accessKeyIdFromDb = false;
-var secretAccessKeyFromDb = false;
+var SecretIdFromDb = false;
+var SecretKeyFromDb = false;
 
 function fetchSettings(callback) {
 	db.getObjectFields(Package.name, Object.keys(settings), function (err, newSettings) {
@@ -40,59 +41,59 @@ function fetchSettings(callback) {
 			return;
 		}
 
-		accessKeyIdFromDb = false;
-		secretAccessKeyFromDb = false;
+		SecretIdFromDb = false;
+		SecretKeyFromDb = false;
 
-		if (newSettings.accessKeyId) {
-			settings.accessKeyId = newSettings.accessKeyId;
-			accessKeyIdFromDb = true;
+		if (newSettings.SecretId) {
+			settings.SecretId = newSettings.SecretId;
+			SecretIdFromDb = true;
 		} else {
-			settings.accessKeyId = false;
+			settings.SecretId = false;
 		}
 
-		if (newSettings.secretAccessKey) {
-			settings.secretAccessKey = newSettings.secretAccessKey;
-			secretAccessKeyFromDb = false;
+		if (newSettings.SecretKey) {
+			settings.SecretKey = newSettings.SecretKey;
+			SecretKeyFromDb = false;
 		} else {
-			settings.secretAccessKey = false;
+			settings.SecretKey = false;
 		}
 
 		if (!newSettings.bucket) {
-			settings.bucket = process.env.S3_UPLOADS_BUCKET || "";
+			settings.bucket = process.env.COS_UPLOADS_BUCKET || "";
 		} else {
 			settings.bucket = newSettings.bucket;
 		}
 
 		if (!newSettings.host) {
-			settings.host = process.env.S3_UPLOADS_HOST || "";
+			settings.host = process.env.COS_UPLOADS_HOST || "";
 		} else {
 			settings.host = newSettings.host;
 		}
 
 		if (!newSettings.path) {
-			settings.path = process.env.S3_UPLOADS_PATH || "";
+			settings.path = process.env.COS_UPLOADS_PATH || "";
 		} else {
 			settings.path = newSettings.path;
 		}
 
 		if (!newSettings.region) {
-			settings.region = process.env.AWS_DEFAULT_REGION || "";
+			settings.region = process.env.COS_DEFAULT_REGION || "";
 		} else {
 			settings.region = newSettings.region;
 		}
 
-		if (settings.accessKeyId && settings.secretAccessKey) {
-			AWS.config.update({
-				accessKeyId: settings.accessKeyId,
-				secretAccessKey: settings.secretAccessKey
-			});
-		}
+		// if (settings.accessKeyId && settings.secretAccessKey) {
+		// 	AWS.config.update({
+		// 		accessKeyId: settings.accessKeyId,
+		// 		secretAccessKey: settings.secretAccessKey
+		// 	});
+		// }
 
-		if (settings.region) {
-			AWS.config.update({
-				region: settings.region
-			});
-		}
+		// if (settings.region) {
+		// 	AWS.config.update({
+		// 		region: settings.region
+		// 	});
+		// }
 
 		if (typeof callback === "function") {
 			callback();
@@ -100,12 +101,15 @@ function fetchSettings(callback) {
 	});
 }
 
-function S3() {
-	if (!S3Conn) {
-		S3Conn = new AWS.S3();
+function connCos() {
+	if (!COSConn) {
+		COSConn = new COS({
+            SecretId: settings.SecretId,
+            SecretKey: settings.SecretKey
+        });
 	}
 
-	return S3Conn;
+	return COSConn;
 }
 
 function makeError(err) {
@@ -120,15 +124,15 @@ function makeError(err) {
 }
 
 plugin.activate = function (data) {
-	if (data.id === 'nodebb-plugin-s3-uploads') {
+	if (data.id === 'nodebb-plugin-cos-uploads') {
 		fetchSettings();
 	}
 
 };
 
 plugin.deactivate = function (data) {
-	if (data.id === 'nodebb-plugin-s3-uploads') {
-		S3Conn = null;
+	if (data.id === 'nodebb-plugin-cos-uploads') {
+		COSConn = null;
 	}
 };
 
@@ -137,12 +141,12 @@ plugin.load = function (params, callback) {
 		if (err) {
 			return winston.error(err.message);
 		}
-		var adminRoute = "/admin/plugins/s3-uploads";
+		var adminRoute = "/admin/plugins/cos-uploads";
 
 		params.router.get(adminRoute, params.middleware.applyCSRF, params.middleware.admin.buildHeader, renderAdmin);
 		params.router.get("/api" + adminRoute, params.middleware.applyCSRF, renderAdmin);
 
-		params.router.post("/api" + adminRoute + "/s3settings", s3settings);
+		params.router.post("/api" + adminRoute + "/cossettings", cossettings);
 		params.router.post("/api" + adminRoute + "/credentials", credentials);
 
 		callback();
@@ -163,15 +167,15 @@ function renderAdmin(req, res) {
 		path: settings.path,
 		forumPath: forumPath,
 		region: settings.region,
-		accessKeyId: (accessKeyIdFromDb && settings.accessKeyId) || "",
-		secretAccessKey: (accessKeyIdFromDb && settings.secretAccessKey) || "",
+		SecretId: (SecretIdFromDb && settings.SecretId) || "",
+		SecretKey: (SecretKeyFromDb && settings.SecretKey) || "",
 		csrf: token
 	};
 
-	res.render("admin/plugins/s3-uploads", data);
+	res.render("admin/plugins/cos-uploads", data);
 }
 
-function s3settings(req, res, next) {
+function cossettings(req, res, next) {
 	var data = req.body;
 	var newSettings = {
 		bucket: data.bucket || "",
@@ -186,8 +190,8 @@ function s3settings(req, res, next) {
 function credentials(req, res, next) {
 	var data = req.body;
 	var newSettings = {
-		accessKeyId: data.accessKeyId || "",
-		secretAccessKey: data.secretAccessKey || ""
+		SecretId: data.SecretId || "",
+		SecretKey: data.SecretKey || ""
 	};
 
 	saveSettings(newSettings, res, next);
@@ -231,7 +235,7 @@ plugin.uploadImage = function (data, callback) {
 		}
 
 		fs.readFile(image.path, function (err, buffer) {
-			uploadToS3(image.name, err, buffer, callback);
+			uploadToCOS(image.name, err, buffer, callback);
 		});
 	}
 	else {
@@ -257,7 +261,7 @@ plugin.uploadImage = function (data, callback) {
 					buf = Buffer.concat([buf, d]);
 				});
 				stdout.on("end", function () {
-					uploadToS3(filename, null, buf, callback);
+					uploadToCOS(filename, null, buf, callback);
 				});
 			});
 	}
@@ -281,68 +285,90 @@ plugin.uploadFile = function (data, callback) {
 	}
 
 	fs.readFile(file.path, function (err, buffer) {
-		uploadToS3(file.name, err, buffer, callback);
+		uploadToCOS(file.name, err, buffer, callback);
 	});
 };
 
-function uploadToS3(filename, err, buffer, callback) {
+function uploadToCOS(filename, err, buffer, callback) {
 	if (err) {
 		return callback(makeError(err));
 	}
 
-	var s3Path;
+	var cosPath;
 	if (settings.path && 0 < settings.path.length) {
-		s3Path = settings.path;
+		cosPath = settings.path;
 
-		if (!s3Path.match(/\/$/)) {
+		if (!cosPath.match(/\/$/)) {
 			// Add trailing slash
-			s3Path = s3Path + "/";
+			cosPath = cosPath + "/";
 		}
 	}
 	else {
-		s3Path = "/";
+		cosPath = "/";
 	}
 
-	var s3KeyPath = s3Path.replace(/^\//, ""); // S3 Key Path should not start with slash.
+	var cosKeyPath = cosPath.replace(/^\//, ""); // S3 Key Path should not start with slash.
 
-	var params = {
-		Bucket: settings.bucket,
-		ACL: "public-read",
-		Key: s3KeyPath + uuid() + path.extname(filename),
-		Body: buffer,
-		ContentLength: buffer.length,
-		ContentType: mime.lookup(filename)
-	};
+	// var params = {
+	// 	Bucket: settings.bucket,
+    //     Region: settings.region,
+    //     Host: settings.host,
+	// 	ACL: "public-read",
+	// 	Key: cosKeyPath + uuid() + path.extname(filename),
+	// 	Body: buffer,
+	// 	ContentLength: buffer.length,
+	// 	ContentType: mime.lookup(filename)
+	// };
 
-	S3().putObject(params, function (err) {
-		if (err) {
-			return callback(makeError(err));
-		}
+    cos.putObject({
+        Bucket: settings.bucket,
+        Region: settings.region,
+        Key: cosKeyPath + uuid() + path.extname(filename),
+        StorageClass: 'STANDARD',
+        Body: buffer,
+        onProgress: function(progressData) {
+            console.log(JSON.stringify(progressData));
+        }
+     }, function(err, data) {
+        if(err == null){
+            callback(null,{
+                name:filename,
+                url:data.Location
+            });
+        }
+        
+    });
 
-		// amazon has https enabled, we use it by default
-		var host = "https://" + params.Bucket +".s3.amazonaws.com";
-		if (settings.host && 0 < settings.host.length) {
-			host = settings.host;
-			// host must start with http or https
-			if (!host.startsWith("http")) {
-				host = "http://" + host;
-			}
-		}
 
-		callback(null, {
-			name: filename,
-			url: host + "/" + params.Key
-		});
-	});
+	// S3().putObject(params, function (err) {
+	// 	if (err) {
+	// 		return callback(makeError(err));
+	// 	}
+
+	// 	// amazon has https enabled, we use it by default
+	// 	var host = "https://" + params.Bucket +".cos."+params.Region+params.Host;
+	// 	// if (settings.host && 0 < settings.host.length) {
+	// 	// 	host = settings.host;
+	// 	// 	// host must start with http or https
+	// 	// 	if (!host.startsWith("http")) {
+	// 	// 		host = "http://" + host;
+	// 	// 	}
+	// 	// }
+
+	// 	callback(null, {
+	// 		name: filename,
+	// 		url: host + "/" + params.Key
+	// 	});
+	// });
 }
 
 var admin = plugin.admin = {};
 
 admin.menu = function (custom_header, callback) {
 	custom_header.plugins.push({
-		"route": "/plugins/s3-uploads",
+		"route": "/plugins/cos-uploads",
 		"icon": "fa-envelope-o",
-		"name": "S3 Uploads"
+		"name": "COS Uploads"
 	});
 
 	callback(null, custom_header);
