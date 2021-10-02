@@ -333,7 +333,7 @@ function uploadToCOS(filename, err, buffer, callback,filesize) {
         if(err == null){
             callback(null,{
                 name:filename,
-                url:data.Location
+                url:"https://"+data.Location
             });
         }
         else{
