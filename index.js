@@ -320,7 +320,7 @@ function uploadToCOS(filename, err, buffer, callback) {
 	// 	ContentType: mime.lookup(filename)
 	// };
 
-    connCos.putObject({
+    connCos().putObject({
         Bucket: settings.bucket,
         Region: settings.region,
         Key: cosKeyPath + uuid() + path.extname(filename),
