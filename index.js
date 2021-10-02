@@ -11,8 +11,8 @@ var mime = require("mime"),
 	nconf = module.parent.require('nconf'),
 	gm = require("gm"),
 	im = gm.subClass({imageMagick: true}),
-	meta = module.parent.require("./meta"),
-	db = module.parent.require("./database");
+	meta = require.main.require("./src/meta"),
+	db = require.main.require("./src/database");
 
 var plugin = {}
 
@@ -320,7 +320,7 @@ function uploadToCOS(filename, err, buffer, callback) {
 	// 	ContentType: mime.lookup(filename)
 	// };
 
-    cos.putObject({
+    connCos.putObject({
         Bucket: settings.bucket,
         Region: settings.region,
         Key: cosKeyPath + uuid() + path.extname(filename),
