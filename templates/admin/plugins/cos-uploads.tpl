@@ -69,11 +69,11 @@
 
 			$.post('{forumPath}api/admin/plugins/cos-uploads/' + type, data).done(function (response) {
 				if (response) {
-					ajaxify.refresh();
+					//ajaxify.refresh();
 					app.alertSuccess(response);
 				}
 			}).fail(function (jqXHR, textStatus, errorThrown) {
-				ajaxify.refresh();
+				//ajaxify.refresh();
 				app.alertError(jqXHR.responseJSON ? jqXHR.responseJSON.error : 'Error saving!');
 			});
 		}
