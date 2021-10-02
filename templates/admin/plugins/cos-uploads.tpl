@@ -1,4 +1,4 @@
-<h1><i class="fa fa-picture-o"></i> S3 Uploads Configuration</h1>
+<h1><i class="fa fa-picture-o"></i> COS配置</h1>
 <hr/>
 
 <p>You can configure this plugin via a combination of the below, for instance, you can use <em>instance meta-data</em>
@@ -6,11 +6,11 @@
 	stored in the database.</p>
 
 <h3>Environment Variables</h3>
-<pre><code>export AWS_ACCESS_KEY_ID="xxxxx"
-export AWS_SECRET_ACCESS_KEY="yyyyy"
-export S3_UPLOADS_BUCKET="zzzz"
-export S3_UPLOADS_HOST="host"
-export S3_UPLOADS_PATH="path"
+<pre><code>export COS_ACCESS_KEY_ID="xxxxx"
+export COS_SECRET_ACCESS_KEY="yyyyy"
+export COS_UPLOADS_BUCKET="zzzz"
+export COS_UPLOADS_HOST="host"
+export COS_UPLOADS_PATH="path"
 </code></pre>
 
 <p>
@@ -99,7 +99,7 @@ export S3_UPLOADS_PATH="path"
 
 		$("#s3-upload-bucket").on("submit", function (e) {
 			e.preventDefault();
-			save("s3settings", this);
+			save("cossettings", this);
 		});
 
 		$("#s3-upload-credentials").on("submit", function (e) {
