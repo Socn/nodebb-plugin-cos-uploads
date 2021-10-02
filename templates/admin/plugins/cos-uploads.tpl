@@ -30,7 +30,7 @@
 		security issue. We highly recommend that you investigate using either <strong>Environment Variables</strong> or
 		<strong>Instance Meta-data</strong>
 	</div>
-	<input type="text" name="SecretId" value="{SecretId}" maxlength="20" title="Access Key ID"
+	<input type="text" name="SecretId" value="{SecretId}" title="Access Key ID"
 	       class="form-control input-lg" placeholder="Access Key ID"><br/>
 	<input type="text" name="SecretKey" value="{SecretKey}" title="Secret Access Key"
 	       class="form-control input-lg" placeholder="Secret Access Key"><br/>
