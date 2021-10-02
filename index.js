@@ -82,12 +82,12 @@ function fetchSettings(callback) {
 			settings.region = newSettings.region;
 		}
 
-		// if (settings.accessKeyId && settings.secretAccessKey) {
-		// 	AWS.config.update({
-		// 		accessKeyId: settings.accessKeyId,
-		// 		secretAccessKey: settings.secretAccessKey
-		// 	});
-		// }
+		if (settings.SecretId && settings.SecretId) {
+			COSConn = new COS({
+				SecretId: settings.SecretId,
+				SecretKey: settings.SecretKey
+			});
+		}
 
 		// if (settings.region) {
 		// 	AWS.config.update({
@@ -118,7 +118,7 @@ function makeError(err) {
 	} else {
 		err = new Error(Package.name + " :: " + err);
 	}
-	console.log(err);
+
 	winston.error(err.message);
 	return err;
 }
@@ -200,6 +200,7 @@ function credentials(req, res, next) {
 function saveSettings(settings, res, next) {
 	db.setObject(Package.name, settings, function (err) {
 		if (err) {
+            console.log(err);
 			return next(makeError(err));
 		}
 
@@ -261,7 +262,7 @@ plugin.uploadImage = function (data, callback) {
 					buf = Buffer.concat([buf, d]);
 				});
 				stdout.on("end", function () {
-					uploadToCOS(filename, null, buf, callback);
+					uploadToCOS(filename, null, buf, callback,null);
 				});
 			});
 	}
@@ -285,11 +286,11 @@ plugin.uploadFile = function (data, callback) {
 	}
 
 	fs.readFile(file.path, function (err, buffer) {
-		uploadToCOS(file.name, err, buffer, callback);
+		uploadToCOS(file.name, err, buffer, callback,file.size);
 	});
 };
 
-function uploadToCOS(filename, err, buffer, callback) {
+function uploadToCOS(filename, err, buffer, callback,filesize) {
 	if (err) {
 		return callback(makeError(err));
 	}
@@ -320,23 +321,29 @@ function uploadToCOS(filename, err, buffer, callback) {
 	// 	ContentType: mime.lookup(filename)
 	// };
 
-    connCos().putObject({
+    console.log(cosKeyPath + uuid() + path.extname(filename));
+    connCos.putObject({
         Bucket: settings.bucket,
         Region: settings.region,
         Key: cosKeyPath + uuid() + path.extname(filename),
         StorageClass: 'STANDARD',
         Body: buffer,
+        ContentLength: filesize,
         onProgress: function(progressData) {
             console.log(JSON.stringify(progressData));
         }
      }, function(err, data) {
+        console.log(err);
+        console.log(data);
         if(err == null){
             callback(null,{
                 name:filename,
                 url:data.Location
             });
         }
-        
+        else{
+            callback(err,null);
+        }
     });
 
 
