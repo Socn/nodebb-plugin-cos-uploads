@@ -118,7 +118,7 @@ function makeError(err) {
 	} else {
 		err = new Error(Package.name + " :: " + err);
 	}
-
+	console.log(err);
 	winston.error(err.message);
 	return err;
 }
