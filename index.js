@@ -322,7 +322,7 @@ function uploadToCOS(filename, err, buffer, callback,filesize) {
 	// };
 
     console.log(cosKeyPath + uuid() + path.extname(filename));
-    connCos.putObject({
+    connCos().putObject({
         Bucket: settings.bucket,
         Region: settings.region,
         Key: cosKeyPath + uuid() + path.extname(filename),
