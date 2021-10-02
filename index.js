@@ -322,6 +322,8 @@ function uploadToCOS(filename, err, buffer, callback,filesize) {
 	// };
 
     console.log(cosKeyPath + uuid() + path.extname(filename));
+    console.log(settings.SecretId);
+    console.log(settings.SecretKey);
     connCos().putObject({
         Bucket: settings.bucket,
         Region: settings.region,
